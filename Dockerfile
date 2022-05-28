@@ -22,6 +22,10 @@ RUN mkdir /tmp/k9s \
   && rm -rf /tmp/k9s \
   && chmod +x /usr/local/bin/k9s
 
+RUN mkdir -p /usr/local/lib/docker/cli-plugins \
+  && curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+  && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
 RUN ssh-keygen -A && passwd -d root \
   && printf "\nPasswordAuthentication no\nPermitUserEnvironment yes\n" >> /etc/ssh/sshd_config
 
