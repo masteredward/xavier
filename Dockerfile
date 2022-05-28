@@ -4,7 +4,7 @@ ENV DOCKER_HOST=unix:///var/run/docker.sock
 
 COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
-RUN dnf install zsh git unzip openssl bind-utils net-tools iputils iproute python3-pip jq rsync nano dnf-plugins-core htop -y \
+RUN dnf install zsh openssh-server passwd git unzip openssl bind-utils net-tools iputils iproute python3-pip jq rsync nano dnf-plugins-core htop helm -y \
   && dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo \
   && dnf install packer terraform -y \
   && dnf clean all
@@ -22,6 +22,13 @@ RUN mkdir /tmp/k9s \
   && rm -rf /tmp/k9s \
   && chmod +x /usr/local/bin/k9s
 
+RUN ssh-keygen -A && passwd -d root \
+  && printf "\nPasswordAuthentication no\nPermitUserEnvironment yes\n" >> /etc/ssh/sshd_config
+
+RUN usermod -s /usr/bin/zsh root
+
 WORKDIR /root
 
-ENTRYPOINT /usr/bin/zsh
+EXPOSE 22
+
+ENTRYPOINT /usr/sbin/sshd -De
