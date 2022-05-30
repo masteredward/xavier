@@ -12,4 +12,4 @@ docker run -d \
   -v /storage/xavier:/root \
   -v /storage/kind:/kind \
   --restart unless-stopped \
-  xavier
+  masteredward/xavier:latest
