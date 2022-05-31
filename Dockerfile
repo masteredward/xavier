@@ -1,5 +1,10 @@
 FROM fedora:36
 
+ARG TERRAFORM_VERSION=1.2.1 \
+  PACKER_VERSION=1.8.1 \
+  KIND_VERSION=0.14.0 \
+  BUILDX_VERSION=0.8.2
+
 LABEL maintainer="Eduardo Silva <edu.medeiros.info@gmail.com>"
 
 ENV DOCKER_HOST=unix:///var/run/docker.sock
@@ -9,11 +14,20 @@ COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
 # Distro utilities
 RUN dnf install zsh openssh-server passwd git unzip openssl bind-utils net-tools iputils iproute python3-pip jq rsync nano dnf-plugins-core htop procps-ng helm ansible -y \
-  && dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo \
-  && dnf install packer terraform -y \
   && dnf clean all
 
 ARG TARGETPLATFORM
+
+# Hashicorp Terraform and Packer
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
+  && mkdir /tmp/hashicorp \
+  && curl -L https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCHITECTURE}.zip -o /tmp/hashicorp/terraform.zip \
+  && curl -L https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_${ARCHITECTURE}.zip -o /tmp/hashicorp/packer.zip \
+  && unzip /tmp/hashicorp/packer.zip -d /tmp/hashicorp \
+  && unzip /tmp/hashicorp/terraform.zip -d /tmp/hashicorp \
+  && mv /tmp/hashicorp/{packer,terraform} /usr/local/bin \
+  && rm -rf /tmp/hashicorp \
+  && chmod +x /usr/local/bin/{packer,terraform}
 
 # Kubectl install
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
@@ -22,7 +36,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$
 
 # Kind install
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
-  && curl -L https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-${ARCHITECTURE} -o /usr/local/bin/kind \
+  && curl -L https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-${ARCHITECTURE} -o /usr/local/bin/kind \
   && chmod +x /usr/local/bin/kind
 
 # K9s install
@@ -42,7 +56,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "
 
 # Docker BuildX plugin install
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
-  && curl -L https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-${ARCHITECTURE} -o /usr/local/lib/docker/cli-plugins/docker-buildx \
+  && curl -L https://github.com/docker/buildx/releases/download/v${BUILDX_VERSION}/buildx-v${BUILDX_VERSION}.linux-${ARCHITECTURE} -o /usr/local/lib/docker/cli-plugins/docker-buildx \
   && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
 
 # SSH setup
