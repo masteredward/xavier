@@ -8,7 +8,7 @@ ENV DOCKER_HOST=unix:///var/run/docker.sock
 COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
 # Distro utilities
-RUN dnf install zsh openssh-server passwd git unzip openssl bind-utils net-tools iputils iproute python3-pip jq rsync nano dnf-plugins-core htop helm ansible -y \
+RUN dnf install zsh openssh-server passwd git unzip openssl bind-utils net-tools iputils iproute python3-pip jq rsync nano dnf-plugins-core htop procps-ng helm ansible -y \
   && dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo \
   && dnf install packer terraform -y \
   && dnf clean all
