@@ -1,5 +1,7 @@
 name: Container Build CI
 
+runs-on: self-hosted
+
 on:
   push:
     branches:
@@ -28,6 +30,6 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ghcr.io/masteredward/xavier:latest
