@@ -13,26 +13,37 @@ RUN dnf install zsh openssh-server passwd git unzip openssl bind-utils net-tools
   && dnf install packer terraform -y \
   && dnf clean all
 
+ARG TARGETPLATFORM
+
 # Kubectl install
-RUN curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
+  && curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCHITECTURE}/kubectl" -o /usr/local/bin/kubectl \
   && chmod +x /usr/local/bin/kubectl
 
 # Kind install
-RUN curl -L https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-amd64 -o /usr/local/bin/kind \
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
+  && curl -L https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-${ARCHITECTURE} -o /usr/local/bin/kind \
   && chmod +x /usr/local/bin/kind
 
 # K9s install
-RUN mkdir /tmp/k9s \
-  && curl -L https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_x86_64.tar.gz -o /tmp/k9s/k9s.tar.gz \
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
+  && mkdir /tmp/k9s \
+  && curl -L https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_${ARCHITECTURE}.tar.gz -o /tmp/k9s/k9s.tar.gz \
   && tar xvf /tmp/k9s/k9s.tar.gz -C /tmp/k9s \
   && mv /tmp/k9s/k9s /usr/local/bin \
   && rm -rf /tmp/k9s \
   && chmod +x /usr/local/bin/k9s
 
 # Docker Compose V2 plugin install
-RUN mkdir -p /usr/local/lib/docker/cli-plugins \
-  && curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=x86_64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=aarch64; fi \
+  && mkdir -p /usr/local/lib/docker/cli-plugins \
+  && curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-${ARCHITECTURE} -o /usr/local/lib/docker/cli-plugins/docker-compose \
   && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# Docker BuildX plugin install
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; fi \
+  && curl -L https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-${ARCHITECTURE} -o /usr/local/lib/docker/cli-plugins/docker-buildx \
+  && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
 
 # SSH setup
 RUN ssh-keygen -A && passwd -d root \
