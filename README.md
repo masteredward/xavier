@@ -96,7 +96,49 @@ ssh root@192.168.100.100 -i ~/.ssh/id_ed25519 -p 2222
 
 Also, I recommend you to generate an [Ed25519](https://ed25519.cr.yp.to/) SSH private key instead of an outdated RSA. It offers a better security, it's faster and the public key is very compact! You can generate an **Ed25519** SSH key using `ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "my@email.com"`
 
-## Xavier License
+## Docker usage guidelines (important!)
+
+When using Docker to deploy containers on the host machine, be aware that Xavier container *is not the host machine*! You always have to look at the paths from the host perspective. For example, you're developing an [NodeJS](https://nodejs.org) app using it's [oficial Docker image](https://hub.docker.com/_/node) and you want to bind mount the folder `~/nodeapp` in Xavier container to the NodeJS container folder `/app`. Normally, when using your computer directly, you can write a `docker-compose.yaml` like this:
+
+```yaml
+# This will not work!
+
+version: '3.9'
+
+services:
+  nodejs:
+    image: node
+    ports:
+    - 3000:3000
+    working_dir: /app
+    volumes:
+    - type: bind
+      source: /root/nodeapp
+      target: /app
+```
+
+Since you have to inform the path *viewing from the host perspective*, you need to figure the full path of the `/root/nodeapp` in the host machine. This can be done by looking into Xavier's **SystemD** file or the `run_xavier.sh` file on the host machine. By default, I'm binding Xavier's `/root` to `/storage/xavier` on the host machine. So, viewing from the host perspective, the **REAL PATH** for my application folder is `/storage/xavier/nodeapp`. If you change the `docker-compose.yaml` to this path instead, the problem is solved:
+
+```yaml
+# This WILL work!
+
+version: '3.9'
+
+services:
+  nodejs:
+    image: node
+    ports:
+    - 3000:3000
+    working_dir: /app
+    volumes:
+    - type: bind
+      source: /storage/xavier/nodeapp # This is the REAL PATH!
+      target: /app
+```
+
+If you're bindind Xavier's `/root` to another folder, just make the apropriate corrections and you're good to go! Happy huntin'!
+
+## License information
 
 Copyright 2022 Eduardo Medeiros SIlva
 
