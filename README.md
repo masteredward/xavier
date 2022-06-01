@@ -4,7 +4,7 @@
 
 The main reason I created this project was because I wanted a dev/test lab that I could build and deploy in less than **5 minutes** from scratch, always with updated packages, completely separate from my main OS and that could be virtualized on any hypervisor.
 
-For this purpose, I'm using the Container Linux [Flatcar](https://flatcar-linux.org/). The **Flatcar** project is a fork of the original [CoreOS](https://www.wikipedia.org/wiki/Container_Linux) project, before being transformed into the [Fedora CoreOS](https://getfedora.org/coreos). Since **Flatcar** can be deployed in a couple minutes, if fits perfectly into my 5 minute goal.
+For this purpose, I'm using the Container Linux [Flatcar](https://flatcar-linux.org/). The **Flatcar** project is a fork of the original [CoreOS](https://www.wikipedia.org/wiki/Container_Linux) project, before being transformed into the [Fedora CoreOS](https://getfedora.org/coreos). Since **Flatcar** can be deployed in a couple minutes, it fits perfectly into my 5 minute goal.
 
 If you want to use **Flatcar** as well, refer to the folder `flatcar/`. I bundled an example *Container Linux Config file* that can be customized and transpiled into a *Ignition file* using the [Config Transpiler](https://flatcar-linux.org/docs/latest/provisioning/config-transpiler/getting-started/). Also some tips to install it faster.
 
@@ -98,7 +98,7 @@ Also, I recommend you to generate an [Ed25519](https://ed25519.cr.yp.to/) SSH pr
 
 ## Docker usage guidelines (important!)
 
-When using Docker to deploy containers on the host machine, be aware that Xavier container *is not the host machine*! You always have to look at the paths from the host perspective. For example, you're developing an [NodeJS](https://nodejs.org) app using it's [oficial Docker image](https://hub.docker.com/_/node) and you want to bind mount the folder `~/nodeapp` in Xavier container to the NodeJS container folder `/app`. Normally, when using your computer directly, you can write a `docker-compose.yaml` like this:
+When using Docker to deploy containers on the host machine, be aware that Xavier container *is not the host machine*! You always have to look at the paths from the host perspective. For example, if you're developing an [NodeJS](https://nodejs.org) app using it's [oficial Docker image](https://hub.docker.com/_/node) and you want to bind mount the folder `~/nodeapp` on Xavier container to the NodeJS container folder `/app`. Normally, when using your computer directly, you can write a `docker-compose.yaml` like this:
 
 ```yaml
 # This will not work!
